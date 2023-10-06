@@ -38,7 +38,7 @@ module AWS
       #
       def load(source)
         return nil if source.nil?
-        YAML.load source
+        YAML.unsafe_load source
       end
     end
 
