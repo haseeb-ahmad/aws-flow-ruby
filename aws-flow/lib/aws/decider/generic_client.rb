@@ -116,13 +116,14 @@ module AWS
       # end
       def send_async(task, *args, &block)
         bail_if_external
+      
         # If there is no block, just make a block for immediate return.
         modified_options = if block.nil?
-                            { return_on_start: true }
+                            Proc.new { |cluster, status_method| { return_on_start: true } }
                           # If there is a block, and it doesn't take any arguments, it will
                           # evaluate to a hash. Add an option to the hash.
                           elsif block.arity.zero?
-                            lambda do
+                            lambda do |cluster, status_method|
                               result = block.call
                               # We need to copy the hash to make sure that we don't mutate it
                               result = result.dup
@@ -133,7 +134,7 @@ module AWS
                           # things on that object. So make our new Proc do that, and add an
                           # option.
                           else
-                            lambda do |x|
+                            lambda do |cluster, status_method, x|
                               result = block.call(x)
                               # Same as the above dup, we'll copy to avoid any possible mutation
                               # of inputted objects
@@ -142,6 +143,7 @@ module AWS
                               result
                             end
                           end
+      
         self.send(task, *args, &modified_options)
       end
 
