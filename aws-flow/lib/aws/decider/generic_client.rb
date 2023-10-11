@@ -85,66 +85,39 @@ module AWS
       #      foo.send :bar # plus args and block if appropriate
       #    end
       #
-      # def send_async(task, *args, &block)
-      #   bail_if_external
-      #   # If there is no block, just make a block for immediate return.
-      #   if block.nil?
-      #     modified_options = Proc.new{ {:return_on_start => true } }
-      #     # If there is a block, and it doesn't take any arguments, it will
-      #     # evaluate to a hash. Add an option to the hash.
-      #   elsif block.arity == 0
-      #     modified_options = Proc.new do
-      #       result = block.call
-      #       # We need to copy the hash to make sure that we don't mutate it
-      #       result = result.dup
-      #       result[:return_on_start] = true
-      #       result
-      #     end
-      #     # Otherwise, it will expect an options object passed in, and will do
-      #     # things on that object. So make our new Proc do that, and add an
-      #     # option.
-      #   else modified_options = Proc.new do |x|
-      #       result = block.call(x)
-      #       # Same as the above dup, we'll copy to avoid any possible mutation
-      #       # of inputted objects
-      #       result = result.dup
-      #       result.return_on_start = true
-      #       result
-      #     end
-      #   end
-      #   self.send(task, *args, &modified_options)
-      # end
       def send_async(task, *args, &block)
-        bail_if_external
-      
-        # If there is no block, just make a block for immediate return.
-        modified_options = if block.nil?
-                            Proc.new { |cluster, status_method| { return_on_start: true } }
-                          # If there is a block, and it doesn't take any arguments, it will
-                          # evaluate to a hash. Add an option to the hash.
-                          elsif block.arity.zero?
-                            lambda do |cluster, status_method|
-                              result = block.call
-                              # We need to copy the hash to make sure that we don't mutate it
-                              result = result.dup
-                              result[:return_on_start] = true
-                              result
-                            end
-                          # Otherwise, it will expect an options object passed in, and will do
-                          # things on that object. So make our new Proc do that, and add an
-                          # option.
-                          else
-                            lambda do |cluster, status_method, x|
-                              result = block.call(x)
-                              # Same as the above dup, we'll copy to avoid any possible mutation
-                              # of inputted objects
-                              result = result.dup
-                              result.return_on_start = true
-                              result
-                            end
-                          end
-      
-        self.send(task, *args, &modified_options)
+        begin
+          bail_if_external
+          # If there is no block, just make a block for immediate return.
+          if block.nil?
+            modified_options = Proc.new{ {:return_on_start => true } }
+            # If there is a block, and it doesn't take any arguments, it will
+            # evaluate to a hash. Add an option to the hash.
+          elsif block.arity == 0
+            modified_options = Proc.new do
+              result = block.call
+              # We need to copy the hash to make sure that we don't mutate it
+              result = result.dup
+              result[:return_on_start] = true
+              result
+            end
+            # Otherwise, it will expect an options object passed in, and will do
+            # things on that object. So make our new Proc do that, and add an
+            # option.
+          else modified_options = Proc.new do |x|
+              result = block.call(x)
+              # Same as the above dup, we'll copy to avoid any possible mutation
+              # of inputted objects
+              result = result.dup
+              result.return_on_start = true
+              result
+            end
+          end
+          self.send(task, *args, &modified_options)
+        rescue => ex
+          log("Exception====================#{ex.message}")
+          puts "Exception================#{ex.message}====#{ex.backtrace}"
+        end
       end
 
       # Retries the given method using an exponential fallback function.
