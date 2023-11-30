@@ -85,7 +85,7 @@ module AWS
       #      foo.send :bar # plus args and block if appropriate
       #    end
       #
-      def send_async(task, **args, &block)
+      def send_async(task, *args, **kwargs, &block)
         bail_if_external
         # If there is no block, just make a block for immediate return.
         if block.nil?
@@ -112,7 +112,7 @@ module AWS
             result
           end
         end
-        self.send(task, args, &modified_options)
+        self.send(task, *args, **kwargs &modified_options)
       end
 
       # Retries the given method using an exponential fallback function.
