@@ -16,6 +16,7 @@ PATH
       aws-sdk-v1
       bugsnag
       json (~> 2.6.3)
+      json_pure (~> 2.6.3)
       lru_redux (~> 0, >= 0.8.1)
       nokogiri
 
@@ -47,6 +48,7 @@ GEM
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
     json (2.6.3)
+    json_pure (2.6.3)
     lru_redux (0.8.4)
     method_source (1.0.0)
     minitest (5.20.0)
