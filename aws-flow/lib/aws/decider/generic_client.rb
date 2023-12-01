@@ -112,7 +112,7 @@ module AWS
             result
           end
         end
-        self.send(task, *args, **kwargs &modified_options)
+        self.send(task, *args, **kwargs, &modified_options)
       end
 
       # Retries the given method using an exponential fallback function.
