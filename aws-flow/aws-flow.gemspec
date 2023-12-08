@@ -16,7 +16,8 @@ Gem::Specification.new do |s|
   s.required_ruby_version = ">= 1.9.1"
   s.add_dependency "aws-sdk-v1"
   s.add_dependency "lru_redux", "~> 0", ">= 0.8.1"
-  s.add_dependency "json", "~> 2"
+  s.add_dependency "json", "~> 2.6.3"
+  s.add_dependency "json_pure", "~> 2.6.3"
   s.add_dependency "nokogiri"
   s.add_dependency "bugsnag"
   s.add_development_dependency('pry')
