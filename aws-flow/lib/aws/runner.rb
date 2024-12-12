@@ -151,9 +151,9 @@ module AWS
       def self.load_files(config_path, json_config, what)
         if is_empty_field?(json_config, what[:config_key]) then
           file = File.join(File.dirname(config_path), what[:default_file])
-          require file if File.exists? file
+          require file if File.exist? file
         else
-          json_config[what[:config_key]].each { |file| require file if File.exists? file }
+          json_config[what[:config_key]].each { |file| require file if File.exist? file }
         end
       end
 

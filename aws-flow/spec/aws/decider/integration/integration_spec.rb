@@ -1017,7 +1017,7 @@ describe "RubyFlowDecider" do
     it "ensures that you can use an arbitrary logger" do
       testing_file = "/tmp/testing"
       general_test(:task_list => "arbitrary logger", :class_name => "ArbitraryLogger")
-      File.delete(testing_file) if File.exists? testing_file
+      File.delete(testing_file) if File.exist? testing_file
       logger = Logger.new(testing_file)
       logger.level = Logger::DEBUG
       worker = WorkflowWorker.new(@swf.client, @domain, "arbitrary logger", @workflow_class) { {:logger => logger} }

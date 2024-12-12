@@ -21,12 +21,12 @@ describe ForkingExecutor do
     test_file_name = "ForkingExecutorTestFile"
     begin
       forking_executor = ForkingExecutor.new
-      File.exists?(test_file_name).should == false
+      File.exist?(test_file_name).should == false
       forking_executor.execute do
         File.new(test_file_name, 'w')
       end
       sleep 3
-      File.exists?(test_file_name).should == true
+      File.exist?(test_file_name).should == true
     ensure
       File.unlink(test_file_name)
     end

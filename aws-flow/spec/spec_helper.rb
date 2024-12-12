@@ -75,7 +75,7 @@ module Test
     def setup_swf domain_name=nil
       current_date = Time.now.strftime("%d-%m-%Y")
       file_name = "/tmp/" + current_date
-      if File.exists?(file_name)
+      if File.exist?(file_name)
         last_run = File.open(file_name, 'r').read.to_i
       else
         last_run = 0

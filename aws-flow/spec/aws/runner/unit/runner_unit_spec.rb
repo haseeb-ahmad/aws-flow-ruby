@@ -27,7 +27,7 @@ describe "Runner" do
 
   describe "JSON loading" do
 
-    it "makes sure that the JSON file exists" do
+    it "makes sure that the JSON file exist" do
       file = Tempfile.new('foo')
       path = file.path
       file.unlink
