@@ -68,7 +68,7 @@ module AWS
               next if @cancelled
               @__context__.remove(self)
             rescue Exception => e
-              @logger.error "poller exception, #{e.backtrace}"
+              Utilities::LogFactory.make_logger(self).error "poller exception, #{e.backtrace}"
               if @backtrace != e
                 backtrace = AsyncBacktrace.create_from_exception(@backtrace, e)
                 e.set_backtrace(backtrace.backtrace) if backtrace
