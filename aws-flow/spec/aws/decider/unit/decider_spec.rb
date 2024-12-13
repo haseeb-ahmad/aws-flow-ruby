@@ -195,6 +195,9 @@ describe "DeciderSpec" do
         def current_time
           Time.now
         end
+        def old_current_time
+          Time.now
+        end
       end
     end
     after(:all) do

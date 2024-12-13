@@ -18,7 +18,7 @@ require 'aws/flow'
 include AWS::Flow::Core
 
 
-require 'factory_girl'
+require 'factory_bot'
 require 'aws/flow'
 include AWS::Flow::Core
 

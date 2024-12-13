@@ -13,7 +13,7 @@ describe YAMLDataConverter do
       end
 
       {
-        Fixnum => 5,
+        Integer => 5,
         String => "Hello World",
         Hash => {:test => "good"},
         Array => ["Hello", "World", 5],
