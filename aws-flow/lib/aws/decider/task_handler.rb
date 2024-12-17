@@ -75,10 +75,17 @@ module AWS
       # @return [AsyncDecider] The created {AsyncDecider}.
       #
       def create_async_decider(history_helper)
+        @logger.debug "create_async_decider: ============"
         task = history_helper.get_decision_task
+        @logger.debug "task: ============#{task.inspect}"
+
         workflow_type = task.workflow_type
+        @logger.debug "workflow_type: ============#{workflow_type.inspect}"
+
         # TODO put in context correctly
+        @logger.debug "workflow_definition_map: ============#{@workflow_definition_map.inspect}"
         workflow_definition_factory = @workflow_definition_map[workflow_type]
+        @logger.debug "workflow_definition_map: ============#{workflow_definition_factory.inspect}"
         raise "No workflow definition for #{workflow_type.inspect}" if workflow_definition_factory.nil?
         AsyncDecider.new(workflow_definition_factory, history_helper, DecisionHelper.new)
       end

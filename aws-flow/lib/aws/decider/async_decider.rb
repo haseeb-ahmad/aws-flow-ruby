@@ -209,6 +209,7 @@ module AWS
       #
       # @api private
       def get_decisions
+
         result = @decision_helper.decision_map.values.map {|decision_object|
           decision_object.get_decision}.compact
         if result.length > DecisionHelper.maximum_decisions_per_completion
@@ -224,8 +225,10 @@ module AWS
       # @api private
       def decide
         begin
+          @logger.debug "decide function: ====="
           decide_impl
         rescue Exception => error
+          @logger.debug "decide function exception: =====#{error.inspect}"
           raise error
         ensure
           begin
