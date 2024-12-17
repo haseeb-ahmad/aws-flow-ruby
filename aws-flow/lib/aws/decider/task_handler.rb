@@ -57,10 +57,14 @@ module AWS
         @logger.debug "decider: #{decider.inspect}"
         decider.decide
         decisions = decider.get_decisions
+        @logger.debug "decisions: #{decisions.inspect}"
         response = {:task_token => decider.task_token}
+        @logger.debug "response: #{response.inspect}"
         context_data = decider.decision_helper.workflow_context_data
+        @logger.debug "context_data: #{context_data.inspect}"
         response[:execution_context] = context_data.to_s unless context_data.nil?
         response[:decisions] = decisions unless decisions.nil?
+        @logger.debug "response========: #{response.inspect}"
         return response
       end
 

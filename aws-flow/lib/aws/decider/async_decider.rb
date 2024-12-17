@@ -244,10 +244,15 @@ module AWS
 
       # @api private
       def decide_impl
+        @logger.debug "decide_impl: ===================="
         single_decision_event = @history_helper.get_single_decision_events
+        @logger.debug "single_decision_event: ====================#{single_decision_event.inspect}"
+
         while single_decision_event.length > 0
+          @logger.debug "in loop: ====================#{@decision_helper.inspect}"
           @decision_helper.handle_decision_task_started_event
           [*single_decision_event].each do |event|
+            @logger.debug "event: ====================#{event.inspect}"
             last_non_replay_event_id = @history_helper.get_last_non_replay_event_id
             @workflow_clock.replaying = false if event.event_id >= last_non_replay_event_id
             @workflow_clock.replay_current_time_millis = @history_helper.get_replay_current_time_millis
@@ -255,7 +260,9 @@ module AWS
             event_loop(event)
           end
           @task_token = @history_helper.get_decision_task.task_token
+          @logger.debug "task_token: ====================#{@task_token.inspect}"
           complete_workflow if completed?
+          @logger.debug "complete_workflow: ====================#{@history_helper.get_single_decision_events.inspect}"
           single_decision_event = @history_helper.get_single_decision_events
         end
         if @unhandled_decision
