@@ -238,7 +238,6 @@ module AWS
         return result
       end
 
-      # @api private
       def decide
          @logger.debug "decide function: ====="
         begin
@@ -262,7 +261,6 @@ module AWS
         end
       end
 
-      # @api private
       def decide_impl
         @logger.debug "decide_impl: ===================="
         single_decision_event = @history_helper.get_single_decision_events
