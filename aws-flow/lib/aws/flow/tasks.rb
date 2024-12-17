@@ -31,7 +31,7 @@ module AWS
         #
         # @param block
         #   A block of code that will be run by the task.
-        #
+        #p
         # @api private
         def initialize(__context__, &block)
           @__context__ = __context__

@@ -191,17 +191,33 @@ module AWS
 
       # Creates a new asynchronous decider.
       def initialize(workflow_definition_factory, history_helper, decision_helper)
+        @logger = Utilities::LogFactory.make_logger(self)
+        @logger.debug "aysnc decider intialization:======================"
+        @logger.debug "workflow_definition_factory:======================#{workflow_definition_factory.inspect}"
+
         @workflow_definition_factory = workflow_definition_factory
         @history_helper = history_helper
         @decision_helper = decision_helper
+        @logger.debug "@decision_helper:======================#{decision_helper.inspect}"
+
         @decision_task = history_helper.get_decision_task
+        @logger.debug "@decision_task:======================#{@decision_task.inspect}"
+
         @workflow_clock = WorkflowClock.new(@decision_helper)
+        @logger.debug "@decision_task:======================#{@decision_task.inspect}"
 
         @workflow_context = WorkflowContext.new(@decision_task, @workflow_clock)
+        @logger.debug "@workflow_context:======================#{@workflow_context.inspect}"
+
         @activity_client = GenericActivityClient.new(@decision_helper, nil)
+        @logger.debug "@@activity_client:======================#{ @activity_client.inspect}"
+
         @workflow_client = GenericWorkflowClient.new(@decision_helper, @workflow_context)
+        @logger.debug "@@workflow_client:======================#{@workflow_client.inspect}"
+
         @decision_context = DecisionContext.new(@activity_client, @workflow_client, @workflow_clock, @workflow_context, @decision_helper)
-        @logger = Utilities::LogFactory.make_logger(self)
+        @logger.debug "@@decision_context:======================#{@decision_context.inspect}"
+
       end
 
       # @note *Beware, this getter will modify things*, as it creates decisions for the objects in the {AsyncDecider}
@@ -224,6 +240,7 @@ module AWS
 
       # @api private
       def decide
+         @logger.debug "decide function: ====="
         begin
           @logger.debug "decide function: ====="
           decide_impl
