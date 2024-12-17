@@ -85,6 +85,7 @@ module AWS
             func_to_call = self.class.get_transitions[[@current_state, symbol]]
             raise "This is not a legal transition" unless func_to_call
 
+
             func_to_call.call(self)
           end
         end

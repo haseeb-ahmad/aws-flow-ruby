@@ -75,8 +75,8 @@ module AWS
             end
             result.set(output)
           end
-          end
-        return result
+        end
+        result
       end
 
       def get_workflow_state

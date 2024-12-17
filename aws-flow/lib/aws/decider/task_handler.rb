@@ -52,7 +52,9 @@ module AWS
       #
       def handle_decision_task(decision_task_iterator)
         history_helper = HistoryHelper.new(decision_task_iterator)
+        @logger.debug "history helper: #{history_helper.inspect}"
         decider = create_async_decider(history_helper)
+        @logger.debug "decider: #{decider.inspect}"
         decider.decide
         decisions = decider.get_decisions
         response = {:task_token => decider.task_token}

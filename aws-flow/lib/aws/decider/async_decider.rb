@@ -201,6 +201,7 @@ module AWS
         @activity_client = GenericActivityClient.new(@decision_helper, nil)
         @workflow_client = GenericWorkflowClient.new(@decision_helper, @workflow_context)
         @decision_context = DecisionContext.new(@activity_client, @workflow_client, @workflow_clock, @workflow_context, @decision_helper)
+        @logger = Utilities::LogFactory.make_logger(self)
       end
 
       # @note *Beware, this getter will modify things*, as it creates decisions for the objects in the {AsyncDecider}
@@ -228,6 +229,7 @@ module AWS
           raise error
         ensure
           begin
+            @logger.debug "defination Object: #{@definition.inspect}"
             @decision_helper.workflow_context_data = @definition.get_workflow_state
           rescue WorkflowException => error
             @decision_helper.workflow_context_data = error.details
@@ -377,7 +379,12 @@ module AWS
         @workflow_async_scope = AsyncScope.new do
           FlowFiber.current[:decision_context] = @decision_context
           input = (event.attributes.keys.include? :input) ?  event.attributes[:input] : nil
+          @logger.debug "event value: #{event.inspect}"
+
+          @logger.debug "input value: #{input.inspect}"
+
           @definition = @workflow_definition_factory.get_workflow_definition(@decision_context)
+          @logger.debug "definition value inside start: #{definition.inspect}"
           @result = @definition.execute(input)
         end
       end
