@@ -191,7 +191,7 @@ module AWS
       #   A block of {RetryOptions} used to specify retry behavior.
       #
       def retry(method_name, retry_function, *args, &block)
-        if retry_function.is_a? Fixnum
+        if retry_function.is_a? Integer
           retry_time = retry_function
           retry_function = lambda {|first_attempt, time_of_failure, attempt| retry_time}
         end

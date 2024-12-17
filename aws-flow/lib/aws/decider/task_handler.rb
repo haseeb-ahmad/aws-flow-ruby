@@ -89,7 +89,9 @@ module AWS
         workflow_definition_factory = @workflow_definition_map[workflow_type]
         @logger.debug "workflow_definition_map: ============#{workflow_definition_factory.inspect}"
         raise "No workflow definition for #{workflow_type.inspect}" if workflow_definition_factory.nil?
-        AsyncDecider.new(workflow_definition_factory, history_helper, DecisionHelper.new)
+        async_decider = AsyncDecider.new(workflow_definition_factory, history_helper, DecisionHelper.new)
+        @logger.debug "async_decider: ============#{async_decider.inspect}"
+        async_handler
       end
 
     end
