@@ -55,8 +55,9 @@ module AWS
         @logger.debug "history helper: #{history_helper.inspect}"
         decider = create_async_decider(history_helper)
         @logger.debug "decider: #{decider.inspect}"
-        @logger.debug "==============================="
-        @logger.debug "===============================#{decider.decide.inspect}"
+        @logger.debug "decider methods==============================="
+        @logger.debug "===============================#{decider.methods}"
+        @logger.debug "===============================#{decider.decide}"
         decider.decide
         decisions = decider.get_decisions
         @logger.debug "decisions: #{decisions.inspect}"

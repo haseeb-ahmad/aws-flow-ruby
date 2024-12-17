@@ -238,8 +238,7 @@ module AWS
         return result
       end
 
-      def decide
-         @logger.debug "decide function: ====="
+      def decide         
         begin
           @logger.debug "decide function: ====="
           decide_impl
@@ -247,45 +246,55 @@ module AWS
           @logger.debug "decide function exception: =====#{error.inspect}"
           raise error
         ensure
+           @logger.debug "decide function: ensure ====="
           begin
             @logger.debug "defination Object: #{@definition.inspect}"
             @decision_helper.workflow_context_data = @definition.get_workflow_state
           rescue WorkflowException => error
+             @logger.debug "decide function error.message: =====#{error.message}"
             @decision_helper.workflow_context_data = error.details
           rescue Exception => error
+            @logger.debug "decide function error.message 2: =====#{error.message}"
             @decision_helper.workflow_context_data = error.message
             # Catch and do stuff
           ensure
+            @logger.debug "decide function ensure 2"
             @workflow_definition_factory.delete_workflow_definition(@definition)
           end
         end
       end
 
       def decide_impl
-        @logger.debug "decide_impl: ===================="
-        single_decision_event = @history_helper.get_single_decision_events
-        @logger.debug "single_decision_event: ====================#{single_decision_event.inspect}"
-
-        while single_decision_event.length > 0
-          @logger.debug "in loop: ====================#{@decision_helper.inspect}"
-          @decision_helper.handle_decision_task_started_event
-          [*single_decision_event].each do |event|
-            @logger.debug "event: ====================#{event.inspect}"
-            last_non_replay_event_id = @history_helper.get_last_non_replay_event_id
-            @workflow_clock.replaying = false if event.event_id >= last_non_replay_event_id
-            @workflow_clock.replay_current_time_millis = @history_helper.get_replay_current_time_millis
-            process_event(event)
-            event_loop(event)
-          end
-          @task_token = @history_helper.get_decision_task.task_token
-          @logger.debug "task_token: ====================#{@task_token.inspect}"
-          complete_workflow if completed?
-          @logger.debug "complete_workflow: ====================#{@history_helper.get_single_decision_events.inspect}"
+        puts "************************ begin"
+        begin
           single_decision_event = @history_helper.get_single_decision_events
-        end
-        if @unhandled_decision
-          @unhandled_decision = false
-          complete_workflow
+          @logger.debug "single_decision_event: ====================#{single_decision_event.inspect}"
+
+          while single_decision_event.length > 0
+            @logger.debug "in loop: ====================#{@decision_helper.inspect}"
+            @decision_helper.handle_decision_task_started_event
+            [*single_decision_event].each do |event|
+              @logger.debug "event: ====================#{event.inspect}"
+              last_non_replay_event_id = @history_helper.get_last_non_replay_event_id
+              @workflow_clock.replaying = false if event.event_id >= last_non_replay_event_id
+              @workflow_clock.replay_current_time_millis = @history_helper.get_replay_current_time_millis
+              process_event(event)
+              event_loop(event)
+            end
+            @task_token = @history_helper.get_decision_task.task_token
+            @logger.debug "task_token: ====================#{@task_token.inspect}"
+            complete_workflow if completed?
+            @logger.debug "complete_workflow: ====================#{@history_helper.get_single_decision_events.inspect}"
+            single_decision_event = @history_helper.get_single_decision_events
+          end
+          if @unhandled_decision
+            @unhandled_decision = false
+            complete_workflow
+          end
+        rescue Exception => error
+            puts "************************"
+            @logger.debug "decide function error.message 3: =====#{error.message}"
+            raise error.message
         end
       end
 
