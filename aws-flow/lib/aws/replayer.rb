@@ -233,6 +233,7 @@ module AWS
         #
         def replay(replay_upto = nil)
           task = @task_provider.get_decision_task(replay_upto)
+          
           @task_handler.handle_decision_task(task) unless task.nil?
         end
       end
