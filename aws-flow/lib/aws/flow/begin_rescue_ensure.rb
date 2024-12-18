@@ -198,9 +198,12 @@ module AWS
         def update_state
           #TODO ? Add the ! @executed part
           #return if @current_state == :closed || ! @executed
+          puts "=============update state#{current_state}"
           return if @current_state == :closed
+          puts "=============update state"
           if @nonDaemonHeirsCount == 0
             if @heirs.empty?
+              puts "=============heirs=====#{@heirs.inspect}"
               consume(:update_state)
             else
               @daemondCausedCancellation = true if @failure == nil

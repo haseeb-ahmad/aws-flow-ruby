@@ -66,19 +66,23 @@ module AWS
 
         def consume(symbol)
           puts "module consume===========#{symbol}"
-          @state_history ||= [self.class.get_start_state]
+          begin
+            @state_history ||= [self.class.get_start_state]
 
-          @state_history << @current_state
-          @state_history << symbol
-          puts "module consume===========#{@state_history}"
+            @state_history << @current_state
+            @state_history << symbol
+            puts "module consume===========#{@state_history}"
 
-          transition_tuple = self.class.get_transitions[[@current_state, symbol]]
-          puts "module consume===========#{transition_tuple}"
+            transition_tuple = self.class.get_transitions[[@current_state, symbol]]
+            puts "module consume===========#{transition_tuple}"
 
-          raise "This is not a legal transition, attempting to consume #{symbol} while at state #{current_state}" unless transition_tuple
-          @current_state, func_to_call = transition_tuple
-          @state_history << @current_state
-          func_to_call.call(self) if func_to_call
+            raise "This is not a legal transition, attempting to consume #{symbol} while at state #{current_state}" unless transition_tuple
+            @current_state, func_to_call = transition_tuple
+            @state_history << @current_state
+            func_to_call.call(self) if func_to_call
+          rescue => error
+            puts "module consume===========#{error.message}"
+          end
         end
       end
     end
@@ -89,9 +93,13 @@ module AWS
       attr_reader :id
       def consume(symbol)
         puts "consume==============#{symbol.inspect}"
-        return @decision = nil if symbol == :handle_initiation_failed_event
-        return if symbol == :handle_decision_task_started_event
-        raise "UnsupportedOperation"
+        begin
+          return @decision = nil if symbol == :handle_initiation_failed_event
+          return if symbol == :handle_decision_task_started_event
+          raise "UnsupportedOperation"
+        rescue => e
+          puts "consume==============#{e.message}"
+        end
       end
       # Creates a new `CompleteWorkflowStateMachine`.
       #

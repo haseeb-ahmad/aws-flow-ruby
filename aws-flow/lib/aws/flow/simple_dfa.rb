@@ -83,12 +83,17 @@ module AWS
 
           # @api private
           def consume(symbol)
-            @current_state ||= self.class.get_start_state
-            func_to_call = self.class.get_transitions[[@current_state, symbol]]
-            raise "This is not a legal transition" unless func_to_call
+            puts "dfa consume===================#{symbol.inspect}"
+            begin
+              @current_state ||= self.class.get_start_state
+              func_to_call = self.class.get_transitions[[@current_state, symbol]]
+              raise "This is not a legal transition" unless func_to_call
 
-
-            func_to_call.call(self)
+              func_to_call.call(self)
+            rescue =>e
+              puts "dfa consume===================#{e.message}"
+              puts "dfa consume===================#{e.backtrace}"
+            end
           end
         end
       end
