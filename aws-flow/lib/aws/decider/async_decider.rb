@@ -415,7 +415,10 @@ module AWS
         puts "handle_workflow_execution_started=============#{event.inspect}"
         begin
           @workflow_async_scope = AsyncScope.new do
+            puts "FlowFiber.current: #{FlowFiber.current.inspect}"
             FlowFiber.current[:decision_context] = @decision_context
+            puts "FlowFiber: #{event.inspect}"
+
             input = (event.attributes.keys.include? :input) ?  event.attributes[:input] : nil
             puts "event value: #{event.inspect}"
 
@@ -649,8 +652,10 @@ module AWS
       #
       def process_event(event)
         event_type_symbol = event.event_type.to_sym
+        puts "process_event==========#{event_type_symbol.inspect}"
         # Mangle the name so that it is handle_ + the name of the event type in snakecase
         handle_event = "handle_" + event.event_type.gsub(/(.)([A-Z])/,'\1_\2').downcase
+        puts "process_event in handle_event==========#{handle_event.inspect}"
         noop_set = Set.new([:DecisionTaskScheduled, :DecisionTaskCompleted,
         :DecisionTaskStarted, :DecisionTaskTimedOut, :WorkflowExecutionTimedOut,
         :WorkflowExecutionTerminated, :MarkerRecorded,
@@ -658,7 +663,7 @@ module AWS
         :WorkflowExecutionCanceled, :WorkflowExecutionContinuedAsNew, :ActivityTaskStarted])
 
         return if noop_set.member? event_type_symbol
-
+puts "process_event in handle_event==================}"
         self_set = Set.new([:TimerFired, :StartTimerFailed,
         :WorkflowExecutionCancel, :ActivityTaskScheduled,
         :WorkflowExecutionCancelRequested,
@@ -695,11 +700,13 @@ module AWS
 
       # @api private
       def event_loop(event)
+        puts "===============event loop===========#{@completed}"
         return if @completed
         begin
           @completed = @workflow_async_scope.eventLoop
           #TODO Make this a cancellationException, set it up correctly?
         rescue Exception => e
+           puts "===============event loop error===========#{e.message}"
           @failure = e unless @cancel_requested
           @completed = true
         end
