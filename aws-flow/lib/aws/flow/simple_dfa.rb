@@ -63,8 +63,10 @@ module AWS
           end
         end
 
-        # @api private
         def add_transition(state, symbol, &block)
+          puts "add transition #{state.inspect}"
+          puts "add transition #{symbol.inspect}"
+          puts "add transition #{block.inspect}"
           @symbols << symbol unless @symbols.include? symbol
           @states << state unless @states.include? state
           @transitions[[state, symbol]] = block

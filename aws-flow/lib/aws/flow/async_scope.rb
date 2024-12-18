@@ -43,6 +43,7 @@ module AWS
         def cancel(error); @root_error_handler.cancel(error); end
 
         def initialize(&block)
+          puts "async scope block=================#{block.inspect}"
           @root_context = RootAsyncScope.new
 
           # 1 for the function that skips frames

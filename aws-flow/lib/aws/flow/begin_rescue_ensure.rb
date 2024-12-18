@@ -255,6 +255,7 @@ module AWS
             end
           end,
         }.each_pair do |key, func|
+          puts "key===========#{key.inspect}"
           add_transition(key.first, key.last) { |t| func.call(t) }
         end
         # That is, any transition from closed leads back to itself
