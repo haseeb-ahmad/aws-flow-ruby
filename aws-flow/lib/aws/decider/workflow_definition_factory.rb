@@ -66,9 +66,10 @@ module AWS
       end
 
       def get_workflow_definition(decision_context)
+        puts "get_workflow_definition==========#{decision_context.inspect}"
         FlowFiber.current[:decision_context] = decision_context
         this_instance = @klass.new
-        get_workflow_definition.new(this_instance, @workflow_method, @signals, @get_state_method, @converter)
+        WorkflowDefinition.new(this_instance, @workflow_method, @signals, @get_state_method, @converter)
       end
 
       def delete_workflow_definition(definition)

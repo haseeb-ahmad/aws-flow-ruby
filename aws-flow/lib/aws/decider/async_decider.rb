@@ -286,7 +286,7 @@ module AWS
             @task_token = @history_helper.get_decision_task.task_token
             puts "task_token: ====================#{@task_token.inspect}"
             complete_workflow if completed?
-            puts "complete_workflow: ====================#{@history_helper.get_single_decision_events.inspect}"
+            puts "complete_workflow: ====================#{@history_helper.get_single_decision_events}"
             single_decision_event = @history_helper.get_single_decision_events
           end
           if @unhandled_decision
@@ -412,15 +412,16 @@ module AWS
       #   The event to process.
       #
       def handle_workflow_execution_started(event)
+        puts "handle_workflow_execution_started=============#{event.inspect}"
         @workflow_async_scope = AsyncScope.new do
           FlowFiber.current[:decision_context] = @decision_context
           input = (event.attributes.keys.include? :input) ?  event.attributes[:input] : nil
-          @logger.debug "event value: #{event.inspect}"
+          puts "event value: #{event.inspect}"
 
-          @logger.debug "input value: #{input.inspect}"
+          puts "input value: #{input.inspect}"
 
           @definition = @workflow_definition_factory.get_workflow_definition(@decision_context)
-          @logger.debug "definition value inside start: #{definition.inspect}"
+          puts "definition value inside start: #{definition.inspect}"
           @result = @definition.execute(input)
         end
       end

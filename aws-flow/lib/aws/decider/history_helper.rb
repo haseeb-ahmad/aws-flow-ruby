@@ -27,7 +27,11 @@ module AWS
         puts "get_single_decision_events==================#{@single_decision_events_iterator.inspect}"
         begin
           @current_decision_data = @single_decision_events_iterator.next
-          return @current_decision_data.decision_events
+          puts "current_decision_data==========#{@current_decision_data.inspect}"
+          test_events = @current_decision_data.decision_events
+          puts "test_events==========#{test_events.inspect}"
+
+          return test_events
         rescue => e
            puts "get_single_decision_events error ==================#{e.message}"
         end
