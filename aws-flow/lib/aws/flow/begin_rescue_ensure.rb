@@ -270,6 +270,8 @@ module AWS
           raise "Duplicated begin" if @begin_task
           # @begin_task = lambda { block.call }
           @begin_task = Task.new(self) { @result.set(block.call) }
+          puts "*********************#{@begin_task}"
+          @begin_task
         end
 
         # Binds the block to a lambda to be called when we get to the rescue part of the DFA
@@ -281,6 +283,7 @@ module AWS
         #   The code block to be called when asynchronous *rescue* starts.
         #
         def rescue(error_types, block)
+          puts "****************************#{error_types}"
           error_types = [error_types] unless error_types.is_a? Array
           this_task = lambda { |failure| block.call(failure) }
           if @rescue_hash.key? error_types
