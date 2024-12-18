@@ -413,16 +413,20 @@ module AWS
       #
       def handle_workflow_execution_started(event)
         puts "handle_workflow_execution_started=============#{event.inspect}"
-        @workflow_async_scope = AsyncScope.new do
-          FlowFiber.current[:decision_context] = @decision_context
-          input = (event.attributes.keys.include? :input) ?  event.attributes[:input] : nil
-          puts "event value: #{event.inspect}"
+        begin
+          @workflow_async_scope = AsyncScope.new do
+            FlowFiber.current[:decision_context] = @decision_context
+            input = (event.attributes.keys.include? :input) ?  event.attributes[:input] : nil
+            puts "event value: #{event.inspect}"
 
-          puts "input value: #{input.inspect}"
+            puts "input value: #{input.inspect}"
 
-          @definition = @workflow_definition_factory.get_workflow_definition(@decision_context)
-          puts "definition value inside start: #{definition.inspect}"
-          @result = @definition.execute(input)
+            @definition = @workflow_definition_factory.get_workflow_definition(@decision_context)
+            puts "definition value inside start: #{definition.inspect}"
+            @result = @definition.execute(input)
+          end
+        rescue => e
+          puts "handle_workflow_execution_started error: #{e.message}"
         end
       end
 
