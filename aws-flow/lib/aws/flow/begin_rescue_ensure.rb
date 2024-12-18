@@ -171,7 +171,8 @@ module AWS
             consume(:run)
             puts "-----------------"
           rescue Exception => error
-            puts "-----run------------#{error}"
+            puts "-----run------------#{error.message}"
+            puts "-----run------------#{error.backtrace}"
             if this_failure != error
               backtrace = AsyncBacktrace.create_from_exception(@backtrace, error)
               error.set_backtrace(backtrace.backtrace) if backtrace
@@ -219,9 +220,9 @@ module AWS
         # @api private
         init(:created)
         {
-          [:created, :run] => ->(bre) { bre.current_state = :begin; bre.run },
-          [:begin, :run] => ->(bre) { bre <<  bre.begin_task },
-          [:begin, :update_state] => lambda do |bre|
+          [:created, :run] => proc { |bre| bre.current_state = :begin; bre.run },
+          [:begin, :run] => proc { |bre| bre <<  bre.begin_task },
+          [:begin, :update_state] => proc do |bre|
             if bre.failure == nil
               bre.current_state = :ensure
             else
@@ -229,7 +230,7 @@ module AWS
             end
             bre.run
           end,
-          [:rescue, :run] => lambda do |bre|
+          [:rescue, :run] => proc do |bre|
             # Emulates the behavior of the actual Ruby rescue, see
             # http://Ruby-doc.org/docs/ProgrammingRuby/html/tut_exceptions.html
             # for more details
@@ -246,14 +247,11 @@ module AWS
               end
             end
           end,
-          [:rescue, :update_state] => ->(bre) {
-            bre.current_state = :ensure
-            bre.run
-          },
-          [:ensure, :run] => lambda do |bre|
+          [:rescue, :update_state] => proc do { |bre| bre.current_state = :ensure; bre.run},
+          [:ensure, :run] => proc do |bre|
             bre << bre.ensure_task if bre.ensure_task
           end,
-          [:ensure, :update_state] => lambda do |bre|
+          [:ensure, :update_state] => proc do |bre|
             bre.current_state = :closed
             if bre.failure == nil
               bre.parent.remove(bre)
