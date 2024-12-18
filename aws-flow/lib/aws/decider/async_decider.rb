@@ -192,31 +192,32 @@ module AWS
       # Creates a new asynchronous decider.
       def initialize(workflow_definition_factory, history_helper, decision_helper)
         @logger = Utilities::LogFactory.make_logger(self)
-        @logger.debug "aysnc decider intialization:======================"
-        @logger.debug "workflow_definition_factory:======================#{workflow_definition_factory.inspect}"
+        puts "aysnc decider intialization:======================"
+        puts "workflow_definition_factory:======================#{workflow_definition_factory.inspect}"
 
         @workflow_definition_factory = workflow_definition_factory
         @history_helper = history_helper
+        puts "@@history_helper:======================#{@history_helper.inspect}"
         @decision_helper = decision_helper
-        @logger.debug "@decision_helper:======================#{decision_helper.inspect}"
+        puts "@decision_helper:======================#{decision_helper.inspect}"
 
         @decision_task = history_helper.get_decision_task
-        @logger.debug "@decision_task:======================#{@decision_task.inspect}"
+        puts "@decision_task:======================#{@decision_task.inspect}"
 
         @workflow_clock = WorkflowClock.new(@decision_helper)
-        @logger.debug "@decision_task:======================#{@decision_task.inspect}"
+        puts "@decision_task:======================#{@decision_task.inspect}"
 
         @workflow_context = WorkflowContext.new(@decision_task, @workflow_clock)
-        @logger.debug "@workflow_context:======================#{@workflow_context.inspect}"
+        puts "@workflow_context:======================#{@workflow_context.inspect}"
 
         @activity_client = GenericActivityClient.new(@decision_helper, nil)
-        @logger.debug "@@activity_client:======================#{ @activity_client.inspect}"
+        puts "@@activity_client:======================#{ @activity_client.inspect}"
 
         @workflow_client = GenericWorkflowClient.new(@decision_helper, @workflow_context)
-        @logger.debug "@@workflow_client:======================#{@workflow_client.inspect}"
+        puts "@@workflow_client:======================#{@workflow_client.inspect}"
 
         @decision_context = DecisionContext.new(@activity_client, @workflow_client, @workflow_clock, @workflow_context, @decision_helper)
-        @logger.debug "@@decision_context:======================#{@decision_context.inspect}"
+        puts "@@decision_context:======================#{@decision_context.inspect}"
 
       end
 
@@ -267,6 +268,7 @@ module AWS
       def decide_impl
         puts "************************ begin"
         begin
+          puts "************************ inside begin #{@history_helper.inspect}"
           single_decision_event = @history_helper.get_single_decision_events
           puts "single_decision_event: ====================#{single_decision_event.inspect}"
 
