@@ -247,7 +247,7 @@ module AWS
               end
             end
           end,
-          [:rescue, :update_state] => proc do { |bre| bre.current_state = :ensure; bre.run},
+          [:rescue, :update_state] => proc { |bre| bre.current_state = :ensure; bre.run},
           [:ensure, :run] => proc do |bre|
             bre << bre.ensure_task if bre.ensure_task
           end,
