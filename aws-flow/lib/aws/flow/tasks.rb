@@ -64,7 +64,7 @@ module AWS
               # Not return because 1.9 will freak about local jump problems if you
               # try to return, as this is inside a block.
               next if @cancelled
-              @result.set(lambda(&block).call)
+              @result.set(proc(&block).call)
               next if @cancelled
               @__context__.remove(self)
             rescue Exception => e
