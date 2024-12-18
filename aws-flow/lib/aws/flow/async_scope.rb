@@ -58,11 +58,7 @@ module AWS
           puts "1.2 async scope block=================}"
           @root_error_handler = BeginRescueEnsure.new(:parent => @root_context)
           begin
-            @root_error_handler.begin lambda { 
-              puts "1.3 async scope block=================}"
-              block.call if block_given? 
-              puts "1.4 async scope block=================}"
-            }
+            @root_error_handler.begin lambda { block.call if block_given? }
             @root_error_handler.rescue(Exception, lambda { |e| raise e })
           end
           @root_context << @root_error_handler

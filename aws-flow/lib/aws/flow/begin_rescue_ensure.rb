@@ -219,8 +219,8 @@ module AWS
         # @api private
         init(:created)
         {
-          [:created, :run] => lambda { |bre| bre.current_state = :begin; bre.run },
-          [:begin, :run] => lambda { |bre| bre <<  bre.begin_task },
+          [:created, :run] => ->(bre) { bre.current_state = :begin; bre.run },
+          [:begin, :run] => ->(bre) { bre <<  bre.begin_task },
           [:begin, :update_state] => lambda do |bre|
             if bre.failure == nil
               bre.current_state = :ensure
@@ -246,7 +246,10 @@ module AWS
               end
             end
           end,
-          [:rescue, :update_state] => lambda { |bre| bre.current_state = :ensure; bre.run},
+          [:rescue, :update_state] => ->(bre) {
+            bre.current_state = :ensure
+            bre.run
+          },
           [:ensure, :run] => lambda do |bre|
             bre << bre.ensure_task if bre.ensure_task
           end,
