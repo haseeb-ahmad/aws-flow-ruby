@@ -238,27 +238,27 @@ module AWS
         return result
       end
 
-      def decide         
+      def decide
+        puts "***********************decide function"
         begin
-          @logger.debug "decide function: ====="
           decide_impl
         rescue Exception => error
-          @logger.debug "decide function exception: =====#{error.inspect}"
+          puts "decide function exception: =====#{error.inspect}"
           raise error
         ensure
-           @logger.debug "decide function: ensure ====="
+          puts "decide function: ensure ====="
           begin
-            @logger.debug "defination Object: #{@definition.inspect}"
+            puts "defination Object: #{@definition.inspect}"
             @decision_helper.workflow_context_data = @definition.get_workflow_state
           rescue WorkflowException => error
-             @logger.debug "decide function error.message: =====#{error.message}"
+            puts "decide function error.message: =====#{error.message}"
             @decision_helper.workflow_context_data = error.details
           rescue Exception => error
-            @logger.debug "decide function error.message 2: =====#{error.message}"
+            puts "decide function error.message 2: =====#{error.message}"
             @decision_helper.workflow_context_data = error.message
             # Catch and do stuff
           ensure
-            @logger.debug "decide function ensure 2"
+            puts "decide function ensure 2"
             @workflow_definition_factory.delete_workflow_definition(@definition)
           end
         end
@@ -268,13 +268,13 @@ module AWS
         puts "************************ begin"
         begin
           single_decision_event = @history_helper.get_single_decision_events
-          @logger.debug "single_decision_event: ====================#{single_decision_event.inspect}"
+          puts "single_decision_event: ====================#{single_decision_event.inspect}"
 
           while single_decision_event.length > 0
-            @logger.debug "in loop: ====================#{@decision_helper.inspect}"
+            puts "in loop: ====================#{@decision_helper.inspect}"
             @decision_helper.handle_decision_task_started_event
             [*single_decision_event].each do |event|
-              @logger.debug "event: ====================#{event.inspect}"
+              puts "event: ====================#{event.inspect}"
               last_non_replay_event_id = @history_helper.get_last_non_replay_event_id
               @workflow_clock.replaying = false if event.event_id >= last_non_replay_event_id
               @workflow_clock.replay_current_time_millis = @history_helper.get_replay_current_time_millis
@@ -282,9 +282,9 @@ module AWS
               event_loop(event)
             end
             @task_token = @history_helper.get_decision_task.task_token
-            @logger.debug "task_token: ====================#{@task_token.inspect}"
+            puts "task_token: ====================#{@task_token.inspect}"
             complete_workflow if completed?
-            @logger.debug "complete_workflow: ====================#{@history_helper.get_single_decision_events.inspect}"
+            puts "complete_workflow: ====================#{@history_helper.get_single_decision_events.inspect}"
             single_decision_event = @history_helper.get_single_decision_events
           end
           if @unhandled_decision
@@ -293,7 +293,7 @@ module AWS
           end
         rescue Exception => error
             puts "************************"
-            @logger.debug "decide function error.message 3: =====#{error.message}"
+            puts "decide function error.message 3: =====#{error.message}"
             raise error.message
         end
       end
