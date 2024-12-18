@@ -167,8 +167,11 @@ module AWS
         def run
           this_failure = @failure
           begin
+            puts "-----------------#{this_failure.inspect}"
             consume(:run)
+            puts "-----------------"
           rescue Exception => error
+            puts "-----run------------#{error}"
             if this_failure != error
               backtrace = AsyncBacktrace.create_from_exception(@backtrace, error)
               error.set_backtrace(backtrace.backtrace) if backtrace
@@ -177,6 +180,7 @@ module AWS
             cancelHeirs
           ensure
             update_state
+            puts "=========run======#{update_state.inspect}"
             raise @failure if (!!@failure && @current_state == :closed)
           end
         end

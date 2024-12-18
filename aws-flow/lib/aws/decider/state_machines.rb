@@ -65,10 +65,16 @@ module AWS
         attr_accessor :current_state
 
         def consume(symbol)
+          puts "module consume===========#{symbol}"
           @state_history ||= [self.class.get_start_state]
+
           @state_history << @current_state
           @state_history << symbol
+          puts "module consume===========#{@state_history}"
+
           transition_tuple = self.class.get_transitions[[@current_state, symbol]]
+          puts "module consume===========#{transition_tuple}"
+
           raise "This is not a legal transition, attempting to consume #{symbol} while at state #{current_state}" unless transition_tuple
           @current_state, func_to_call = transition_tuple
           @state_history << @current_state
@@ -82,6 +88,7 @@ module AWS
       extend DecisionStateMachineDFA
       attr_reader :id
       def consume(symbol)
+        puts "consume==============#{symbol.inspect}"
         return @decision = nil if symbol == :handle_initiation_failed_event
         return if symbol == :handle_decision_task_started_event
         raise "UnsupportedOperation"
