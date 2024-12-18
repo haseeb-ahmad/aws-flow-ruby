@@ -81,7 +81,7 @@ module AWS
                        :id_methods => [:workflow_execution, :workflow_id],
                        :consume_symbol => :handle_cancellation_event,
                        :decision_helper_scheduled => :scheduled_external_workflows,
-                       :handle_open_request => lambda do |event, open_request|
+                       :handle_open_request => proc do |event, open_request|
                          cancellation_exception = CancellationException.new("Cancelled from a ChildWorkflowExecutionCancelled")
                          open_request.completion_handle.fail(cancellation_exception)
                        end
@@ -113,7 +113,7 @@ module AWS
                      {:id_methods => [:workflow_execution, :workflow_id],
                        :consume_symbol => :handle_completion_event,
                        :decision_helper_scheduled => :scheduled_external_workflows,
-                       :handle_open_request => lambda do |event, open_request|
+                       :handle_open_request => proc do |event, open_request|
                          attributes = event.attributes
                          reason = attributes[:reason] if attributes.keys.include? :reason
                          reason ||= "The activity which failed did not provide a reason"
@@ -139,7 +139,7 @@ module AWS
                      {:id_methods => [:workflow_execution, :workflow_id],
                        :consume_symbol => :handle_started_event,
                        :decision_helper_scheduled => :scheduled_external_workflows,
-                       :handle_open_request => lambda do |event, open_request|
+                       :handle_open_request => proc do |event, open_request|
                          open_request.run_id.set(event.attributes.workflow_execution.run_id)
                        end
                      })
@@ -155,7 +155,7 @@ module AWS
                      {:id_methods => [:workflow_execution, :workflow_id],
                        :consume_symbol => :handle_completion_event,
                        :decision_helper_scheduled => :scheduled_external_workflows,
-                       :handle_open_request => lambda do |event, open_request|
+                       :handle_open_request => proc do |event, open_request|
                          exception = ChildWorkflowTerminatedException.new(event.id, open_request.description, nil)
                          open_request.completion_handle.fail(exception)
                        end
@@ -172,7 +172,7 @@ module AWS
                      {:id_methods => [:workflow_execution, :workflow_id],
                        :consume_symbol => :handle_completion_event,
                        :decision_helper_scheduled => :scheduled_external_workflows,
-                       :handle_open_request => lambda do |event, open_request|
+                       :handle_open_request => proc do |event, open_request|
                          exception = ChildWorkflowTimedOutException.new(event.id, open_request.description, nil)
                          open_request.completion_handle.fail(exception)
                        end
@@ -205,7 +205,7 @@ module AWS
                        :id_methods => [:control],
                        :consume_symbol => :handle_completion_event,
                        :decision_helper_scheduled => :scheduled_signals,
-                       :handle_open_request => lambda do |event, open_request|
+                       :handle_open_request => proc do |event, open_request|
                          workflow_execution = AWS::Flow::MinimalWorkflowExecution.new("",event.attributes.workflow_id, event.attributes.run_id)
                          failure = SignalExternalWorkflowException(event.id, workflow_execution, event.attributes.cause)
                          open_request.completion_handle.fail(failure)
@@ -223,7 +223,7 @@ module AWS
                      :id_methods => [:workflow_id],
                      :consume_symbol => :handle_initiation_failed_event,
                      :decision_helper_scheduled => :scheduled_external_workflows,
-                     :handle_open_request => lambda do |event, open_request|
+                     :handle_open_request => proc do |event, open_request|
                          workflow_execution = AWS::Flow::MinimalWorkflowExecution.new("",event.attributes.workflow_id, nil)
                        workflow_type = event.attributes.workflow_type
                        cause = event.attributes.cause

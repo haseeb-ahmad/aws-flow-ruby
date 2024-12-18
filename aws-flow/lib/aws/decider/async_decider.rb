@@ -458,7 +458,7 @@ module AWS
                        :id_methods => [:timer_id],
                        :consume_symbol => :handle_completion_event,
                        :decision_helper_scheduled => :scheduled_timers,
-                       :handle_open_request => lambda do |event, open_request|
+                       :handle_open_request => proc do |event, open_request|
                          exception = StartTimerFailedException(event.id, timer_id, nil, event.attributes.cause)
                          open_request.completion_handle.fail(exception)
                        end
@@ -555,7 +555,7 @@ module AWS
                        :id_methods => [:timer_id],
                        :consume_symbol => :handle_cancellation_event,
                        :decision_helper_scheduled => :scheduled_timers,
-                       :handle_open_request => lambda do |event, open_request|
+                       :handle_open_request => proc do |event, open_request|
                          if ! open_request.nil?
                            cancellation_exception = CancellationException.new("Cancelled from a Timer Cancelled event")
                            open_request.completion_handle.fail(cancellation_exception)

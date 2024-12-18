@@ -174,7 +174,9 @@ module AWS
             puts "-----run------------#{error.message}"
             puts "-----run------------#{error.backtrace}"
             if this_failure != error
+              puts "-----run-exception block-----------"
               backtrace = AsyncBacktrace.create_from_exception(@backtrace, error)
+              puts "-----run-exception block back trace-----------#{backtrace.inspect}"
               error.set_backtrace(backtrace.backtrace) if backtrace
             end
             @failure = error
@@ -290,7 +292,7 @@ module AWS
         def rescue(error_types, block)
           puts "****************************#{error_types}"
           error_types = [error_types] unless error_types.is_a? Array
-          this_task = lambda { |failure| block.call(failure) }
+          this_task = proc { |failure| block.call(failure) }
           if @rescue_hash.key? error_types
             raise "You have already registered #{error_types}"
           end
