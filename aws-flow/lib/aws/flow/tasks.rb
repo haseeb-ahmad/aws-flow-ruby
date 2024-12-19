@@ -64,10 +64,11 @@ module AWS
               # Not return because 1.9 will freak about local jump problems if you
               # try to return, as this is inside a block.
               next if @cancelled
-              @result.set(proc(&block).call)
+              @result.set(block.call)
               next if @cancelled
               @__context__.remove(self)
             rescue Exception => e
+              puts "exception in task file============#{e.message}"
               if @backtrace != e
                 backtrace = AsyncBacktrace.create_from_exception(@backtrace, e)
                 e.set_backtrace(backtrace.backtrace) if backtrace
@@ -290,7 +291,7 @@ module AWS
         #
         # @api private
         def initiate_task(&block)
-          @initiation_task = lambda { block.call(@handle) }
+          @initiation_task = proc { block.call(@handle) }
         end
 
         # From the interface provided by fiber, will execute the external task.

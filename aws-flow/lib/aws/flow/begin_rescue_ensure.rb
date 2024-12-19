@@ -293,7 +293,6 @@ module AWS
         #   The code block to be called when asynchronous *rescue* starts.
         #
         def rescue(error_types, block)
-          puts "****************************#{error_types}"
           error_types = [error_types] unless error_types.is_a? Array
           this_task = proc { |failure| block.call(failure) }
           if @rescue_hash.key? error_types

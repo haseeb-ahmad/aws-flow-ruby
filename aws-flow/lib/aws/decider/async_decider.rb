@@ -193,32 +193,15 @@ module AWS
       def initialize(workflow_definition_factory, history_helper, decision_helper)
         @logger = Utilities::LogFactory.make_logger(self)
         puts "aysnc decider intialization:======================"
-        puts "workflow_definition_factory:======================#{workflow_definition_factory.inspect}"
-
         @workflow_definition_factory = workflow_definition_factory
         @history_helper = history_helper
-        puts "@@history_helper:======================#{@history_helper.inspect}"
         @decision_helper = decision_helper
-        puts "@decision_helper:======================#{decision_helper.inspect}"
-
         @decision_task = history_helper.get_decision_task
-        puts "@decision_task:======================#{@decision_task.inspect}"
-
         @workflow_clock = WorkflowClock.new(@decision_helper)
-        puts "@decision_task:======================#{@decision_task.inspect}"
-
         @workflow_context = WorkflowContext.new(@decision_task, @workflow_clock)
-        puts "@workflow_context:======================#{@workflow_context.inspect}"
-
         @activity_client = GenericActivityClient.new(@decision_helper, nil)
-        puts "@@activity_client:======================#{ @activity_client.inspect}"
-
         @workflow_client = GenericWorkflowClient.new(@decision_helper, @workflow_context)
-        puts "@@workflow_client:======================#{@workflow_client.inspect}"
-
         @decision_context = DecisionContext.new(@activity_client, @workflow_client, @workflow_clock, @workflow_context, @decision_helper)
-        puts "@@decision_context:======================#{@decision_context.inspect}"
-
       end
 
       # @note *Beware, this getter will modify things*, as it creates decisions for the objects in the {AsyncDecider}
@@ -244,7 +227,8 @@ module AWS
         begin
           decide_impl
         rescue Exception => error
-          puts "decide function exception: =====#{error.inspect}"
+          puts "decide function exception: =====#{error.message}"
+          puts "decide function exception backtrace error: =====#{error.backtrace}"
           raise error
         ensure
           puts "decide function: ensure ====="
@@ -253,9 +237,11 @@ module AWS
             @decision_helper.workflow_context_data = @definition.get_workflow_state
           rescue WorkflowException => error
             puts "decide function error.message: =====#{error.message}"
+            puts "decide function error.backtrace: =====#{error.backtrace}"
             @decision_helper.workflow_context_data = error.details
           rescue Exception => error
             puts "decide function error.message 2: =====#{error.message}"
+            puts "decide function error.backtrace 2: =====#{error.backtrace}"
             @decision_helper.workflow_context_data = error.message
             # Catch and do stuff
           ensure
@@ -278,15 +264,21 @@ module AWS
             [*single_decision_event].each do |event|
               puts "event: ====================#{event.inspect}"
               last_non_replay_event_id = @history_helper.get_last_non_replay_event_id
+              puts "last_non_replay_event_id: ====================#{last_non_replay_event_id.inspect}"
+
               @workflow_clock.replaying = false if event.event_id >= last_non_replay_event_id
+              puts "replaying: ===================="
               @workflow_clock.replay_current_time_millis = @history_helper.get_replay_current_time_millis
+              puts "replaying 22 : ===================="
+
               process_event(event)
+              puts "process_event 1 : ===================="
               event_loop(event)
             end
             @task_token = @history_helper.get_decision_task.task_token
             puts "task_token: ====================#{@task_token.inspect}"
             complete_workflow if completed?
-            puts "complete_workflow: ====================#{@history_helper.get_single_decision_events}"
+            puts "complete_workflow: ====================#{completed?}"
             single_decision_event = @history_helper.get_single_decision_events
           end
           if @unhandled_decision
@@ -296,6 +288,7 @@ module AWS
         rescue Exception => error
             puts "************************"
             puts "decide function error.message 3: =====#{error.message}"
+            puts "decide function error.message 3: =====#{error.backtrace}"
             raise error.message
         end
       end
@@ -426,6 +419,7 @@ module AWS
           end
         rescue => e
           puts "handle_workflow_execution_started error: #{e.message}"
+          puts "handle_workflow_execution_started error: #{e.backtrace}"
         end
       end
 
