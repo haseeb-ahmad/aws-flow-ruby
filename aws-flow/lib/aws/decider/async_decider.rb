@@ -259,7 +259,6 @@ module AWS
           puts "single_decision_event: ====================#{single_decision_event.inspect}"
 
           while single_decision_event.length > 0
-            puts "in loop: ====================#{@decision_helper.inspect}"
             @decision_helper.handle_decision_task_started_event
             [*single_decision_event].each do |event|
               puts "event: ====================#{event.inspect}"
