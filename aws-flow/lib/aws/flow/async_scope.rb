@@ -43,9 +43,7 @@ module AWS
         def cancel(error); @root_error_handler.cancel(error); end
 
         def initialize(&block)
-          puts "async scope block=================#{block.inspect}"
           @root_context = RootAsyncScope.new
-          puts "1.0 async scope block=================}"
           # 1 for the function that skips frames
           # 1 for the create function
           # 1 for the initialize of the backtrace
@@ -55,7 +53,6 @@ module AWS
           # "./lib/aws/rubyflow/asyncScope.rb:18:in `initialize'"
 
           @root_context.backtrace = AsyncBacktrace.create(nil, 3)
-          puts "1.2 async scope block=================}"
           @root_error_handler = BeginRescueEnsure.new(:parent => @root_context)
           begin
             @root_error_handler.begin proc { block.call if block_given? }

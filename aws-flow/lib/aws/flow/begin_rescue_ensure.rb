@@ -167,23 +167,16 @@ module AWS
         def run
           this_failure = @failure
           begin
-            puts "-----------------#{this_failure.inspect}"
             consume(:run)
-            puts "-----------------"
           rescue Exception => error
-            puts "-----run------------#{error.message}"
-            puts "-----run------------#{error.backtrace}"
             if this_failure != error
-              puts "-----run-exception block-----------"
               backtrace = AsyncBacktrace.create_from_exception(@backtrace, error)
-              puts "-----run-exception block back trace-----------#{backtrace.inspect}"
               error.set_backtrace(backtrace.backtrace) if backtrace
             end
             @failure = error
             cancelHeirs
           ensure
             update_state
-            puts "=========run======#{update_state.inspect}"
             raise @failure if (!!@failure && @current_state == :closed)
           end
         end
@@ -198,12 +191,9 @@ module AWS
         def update_state
           #TODO ? Add the ! @executed part
           #return if @current_state == :closed || ! @executed
-          puts "=============update state#{current_state}"
           return if @current_state == :closed
-          puts "=============update state"
           if @nonDaemonHeirsCount == 0
             if @heirs.empty?
-              puts "=============heirs=====#{@heirs.inspect}"
               consume(:update_state)
             else
               @daemondCausedCancellation = true if @failure == nil
@@ -265,7 +255,6 @@ module AWS
             end
           end,
         }.each_pair do |key, func|
-          puts "key===========#{key.inspect}"
           add_transition(key.first, key.last) { |t| func.call(t) }
         end
         # That is, any transition from closed leads back to itself
@@ -280,8 +269,6 @@ module AWS
           raise "Duplicated begin" if @begin_task
           # @begin_task = lambda { block.call }
           @begin_task = Task.new(self) { @result.set(block.call) }
-          puts "*********************#{@begin_task}"
-          @begin_task
         end
 
         # Binds the block to a lambda to be called when we get to the rescue part of the DFA

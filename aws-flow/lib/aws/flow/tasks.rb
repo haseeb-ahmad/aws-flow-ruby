@@ -68,7 +68,6 @@ module AWS
               next if @cancelled
               @__context__.remove(self)
             rescue Exception => e
-              puts "exception in task file============#{e.message}"
               if @backtrace != e
                 backtrace = AsyncBacktrace.create_from_exception(@backtrace, e)
                 e.set_backtrace(backtrace.backtrace) if backtrace

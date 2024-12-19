@@ -64,9 +64,6 @@ module AWS
         end
 
         def add_transition(state, symbol, &block)
-          puts "add transition #{state.inspect}"
-          puts "add transition #{symbol.inspect}"
-          puts "add transition #{block.inspect}"
           @symbols << symbol unless @symbols.include? symbol
           @states << state unless @states.include? state
           @transitions[[state, symbol]] = block
@@ -83,17 +80,11 @@ module AWS
 
           # @api private
           def consume(symbol)
-            puts "dfa consume===================#{symbol.inspect}"
-            begin
-              @current_state ||= self.class.get_start_state
-              func_to_call = self.class.get_transitions[[@current_state, symbol]]
-              raise "This is not a legal transition" unless func_to_call
+            @current_state ||= self.class.get_start_state
+            func_to_call = self.class.get_transitions[[@current_state, symbol]]
+            raise "This is not a legal transition" unless func_to_call
 
-              func_to_call.call(self)
-            rescue =>e
-              puts "dfa consume===================#{e.message}"
-              puts "dfa consume===================#{e.backtrace}"
-            end
+            func_to_call.call(self)
           end
         end
       end

@@ -191,8 +191,6 @@ module AWS
 
       # Creates a new asynchronous decider.
       def initialize(workflow_definition_factory, history_helper, decision_helper)
-        @logger = Utilities::LogFactory.make_logger(self)
-        puts "aysnc decider intialization:======================"
         @workflow_definition_factory = workflow_definition_factory
         @history_helper = history_helper
         @decision_helper = decision_helper
@@ -202,6 +200,7 @@ module AWS
         @activity_client = GenericActivityClient.new(@decision_helper, nil)
         @workflow_client = GenericWorkflowClient.new(@decision_helper, @workflow_context)
         @decision_context = DecisionContext.new(@activity_client, @workflow_client, @workflow_clock, @workflow_context, @decision_helper)
+        @logger = Utilities::LogFactory.make_logger(self)
       end
 
       # @note *Beware, this getter will modify things*, as it creates decisions for the objects in the {AsyncDecider}
@@ -209,7 +208,6 @@ module AWS
       #
       # @api private
       def get_decisions
-
         result = @decision_helper.decision_map.values.map {|decision_object|
           decision_object.get_decision}.compact
         if result.length > DecisionHelper.maximum_decisions_per_completion
@@ -222,73 +220,44 @@ module AWS
         return result
       end
 
+      # @api private
       def decide
-        puts "***********************decide function"
         begin
           decide_impl
         rescue Exception => error
-          puts "decide function exception: =====#{error.message}"
-          puts "decide function exception backtrace error: =====#{error.backtrace}"
           raise error
         ensure
-          puts "decide function: ensure ====="
           begin
-            puts "defination Object: #{@definition.inspect}"
             @decision_helper.workflow_context_data = @definition.get_workflow_state
           rescue WorkflowException => error
-            puts "decide function error.message: =====#{error.message}"
-            puts "decide function error.backtrace: =====#{error.backtrace}"
             @decision_helper.workflow_context_data = error.details
           rescue Exception => error
-            puts "decide function error.message 2: =====#{error.message}"
-            puts "decide function error.backtrace 2: =====#{error.backtrace}"
             @decision_helper.workflow_context_data = error.message
             # Catch and do stuff
           ensure
-            puts "decide function ensure 2"
             @workflow_definition_factory.delete_workflow_definition(@definition)
           end
         end
       end
 
       def decide_impl
-        puts "************************ begin"
-        begin
-          puts "************************ inside begin #{@history_helper.inspect}"
+        single_decision_event = @history_helper.get_single_decision_events
+        while single_decision_event.length > 0
+          @decision_helper.handle_decision_task_started_event
+          [*single_decision_event].each do |event|
+            last_non_replay_event_id = @history_helper.get_last_non_replay_event_id
+            @workflow_clock.replaying = false if event.event_id >= last_non_replay_event_id
+            @workflow_clock.replay_current_time_millis = @history_helper.get_replay_current_time_millis
+            process_event(event)
+            event_loop(event)
+          end
+          @task_token = @history_helper.get_decision_task.task_token
+          complete_workflow if completed?
           single_decision_event = @history_helper.get_single_decision_events
-          puts "single_decision_event: ====================#{single_decision_event.inspect}"
-
-          while single_decision_event.length > 0
-            @decision_helper.handle_decision_task_started_event
-            [*single_decision_event].each do |event|
-              puts "event: ====================#{event.inspect}"
-              last_non_replay_event_id = @history_helper.get_last_non_replay_event_id
-              puts "last_non_replay_event_id: ====================#{last_non_replay_event_id.inspect}"
-
-              @workflow_clock.replaying = false if event.event_id >= last_non_replay_event_id
-              puts "replaying: ===================="
-              @workflow_clock.replay_current_time_millis = @history_helper.get_replay_current_time_millis
-              puts "replaying 22 : ===================="
-
-              process_event(event)
-              puts "process_event 1 : ===================="
-              event_loop(event)
-            end
-            @task_token = @history_helper.get_decision_task.task_token
-            puts "task_token: ====================#{@task_token.inspect}"
-            complete_workflow if completed?
-            puts "complete_workflow: ====================#{completed?}"
-            single_decision_event = @history_helper.get_single_decision_events
-          end
-          if @unhandled_decision
-            @unhandled_decision = false
-            complete_workflow
-          end
-        rescue Exception => error
-            puts "************************"
-            puts "decide function error.message 3: =====#{error.message}"
-            puts "decide function error.message 3: =====#{error.backtrace}"
-            raise error.message
+        end
+        if @unhandled_decision
+          @unhandled_decision = false
+          complete_workflow
         end
       end
 
@@ -404,21 +373,11 @@ module AWS
       #   The event to process.
       #
       def handle_workflow_execution_started(event)
-        puts "handle_workflow_execution_started=============#{event.inspect}"
-        # FlowFiber.current[:decision_context] = @decision_context
-        # input = (event.attributes.keys.include? :input) ?  event.attributes[:input] : nil
-        # @definition = @workflow_definition_factory.get_workflow_definition(@decision_context)
-        # @result = @definition.execute(input)
-        begin
-          @workflow_async_scope = AsyncScope.new do
-            FlowFiber.current[:decision_context] = @decision_context
-            input = (event.attributes.keys.include? :input) ?  event.attributes[:input] : nil
-            @definition = @workflow_definition_factory.get_workflow_definition(@decision_context)
-            @result = @definition.execute(input)
-          end
-        rescue => e
-          puts "handle_workflow_execution_started error: #{e.message}"
-          puts "handle_workflow_execution_started error: #{e.backtrace}"
+        @workflow_async_scope = AsyncScope.new do
+          FlowFiber.current[:decision_context] = @decision_context
+          input = (event.attributes.keys.include? :input) ?  event.attributes[:input] : nil
+          @definition = @workflow_definition_factory.get_workflow_definition(@decision_context)
+          @result = @definition.execute(input)
         end
       end
 
@@ -641,10 +600,8 @@ module AWS
       #
       def process_event(event)
         event_type_symbol = event.event_type.to_sym
-        puts "process_event==========#{event_type_symbol.inspect}"
         # Mangle the name so that it is handle_ + the name of the event type in snakecase
         handle_event = "handle_" + event.event_type.gsub(/(.)([A-Z])/,'\1_\2').downcase
-        puts "process_event in handle_event==========#{handle_event.inspect}"
         noop_set = Set.new([:DecisionTaskScheduled, :DecisionTaskCompleted,
         :DecisionTaskStarted, :DecisionTaskTimedOut, :WorkflowExecutionTimedOut,
         :WorkflowExecutionTerminated, :MarkerRecorded,
@@ -652,7 +609,6 @@ module AWS
         :WorkflowExecutionCanceled, :WorkflowExecutionContinuedAsNew, :ActivityTaskStarted])
 
         return if noop_set.member? event_type_symbol
-puts "process_event in handle_event==================}"
         self_set = Set.new([:TimerFired, :StartTimerFailed,
         :WorkflowExecutionCancel, :ActivityTaskScheduled,
         :WorkflowExecutionCancelRequested,
@@ -689,19 +645,15 @@ puts "process_event in handle_event==================}"
 
       # @api private
       def event_loop(event)
-        puts "===============event loop===========#{@completed}"
         return if @completed
         begin
           @completed = @workflow_async_scope.eventLoop
           #TODO Make this a cancellationException, set it up correctly?
         rescue Exception => e
-           puts "===============event loop error===========#{e.message}"
           @failure = e unless @cancel_requested
           @completed = true
         end
       end
-
     end
-
   end
 end

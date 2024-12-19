@@ -27,22 +27,11 @@ module AWS
       attr_reader :converter
 
       def initialize(instance, workflow_method, signals, get_state_method, converter)
-        puts "WorkflowDefinition intilize========================"
         @instance = instance
-        puts "WorkflowDefinition intilize @instance========================#{@instance.inspect}"
-
         @workflow_method = workflow_method
-        puts "WorkflowDefinition intilize @workflow_method========================#{@workflow_method.inspect}"
-
         @get_state_method = get_state_method
-        puts "WorkflowDefinition intilize @workflow_method========================#{@get_state_method.inspect}"
-
         @signals = signals
-        puts "WorkflowDefinition intilize @signals========================#{@signals.inspect}"
-
         @converter = converter
-        puts "WorkflowDefinition intilize @converter========================#{@converter.inspect}"
-
       end
 
       def execute(input = nil)

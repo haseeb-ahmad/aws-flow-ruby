@@ -24,17 +24,8 @@ module AWS
       end
 
       def get_single_decision_events
-        puts "get_single_decision_events==================#{@single_decision_events_iterator.inspect}"
-        begin
-          @current_decision_data = @single_decision_events_iterator.next
-          puts "current_decision_data==========#{@current_decision_data.inspect}"
-          test_events = @current_decision_data.decision_events
-          puts "test_events==========#{test_events.inspect}"
-
-          return test_events
-        rescue => e
-           puts "get_single_decision_events error ==================#{e.message}"
-        end
+        @current_decision_data = @single_decision_events_iterator.next
+        @current_decision_data.decision_events
       end
 
       def get_replay_current_time_millis
