@@ -63,6 +63,7 @@ module AWS
           end
         end
 
+        # @api private
         def add_transition(state, symbol, &block)
           @symbols << symbol unless @symbols.include? symbol
           @states << state unless @states.include? state
@@ -83,6 +84,7 @@ module AWS
             @current_state ||= self.class.get_start_state
             func_to_call = self.class.get_transitions[[@current_state, symbol]]
             raise "This is not a legal transition" unless func_to_call
+
 
             func_to_call.call(self)
           end

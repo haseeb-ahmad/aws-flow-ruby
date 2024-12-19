@@ -196,6 +196,7 @@ module AWS
         @decision_helper = decision_helper
         @decision_task = history_helper.get_decision_task
         @workflow_clock = WorkflowClock.new(@decision_helper)
+
         @workflow_context = WorkflowContext.new(@decision_task, @workflow_clock)
         @activity_client = GenericActivityClient.new(@decision_helper, nil)
         @workflow_client = GenericWorkflowClient.new(@decision_helper, @workflow_context)
@@ -240,6 +241,7 @@ module AWS
         end
       end
 
+      # @api private
       def decide_impl
         single_decision_event = @history_helper.get_single_decision_events
         while single_decision_event.length > 0
@@ -609,6 +611,7 @@ module AWS
         :WorkflowExecutionCanceled, :WorkflowExecutionContinuedAsNew, :ActivityTaskStarted])
 
         return if noop_set.member? event_type_symbol
+
         self_set = Set.new([:TimerFired, :StartTimerFailed,
         :WorkflowExecutionCancel, :ActivityTaskScheduled,
         :WorkflowExecutionCancelRequested,
@@ -654,6 +657,8 @@ module AWS
           @completed = true
         end
       end
+
     end
+
   end
 end

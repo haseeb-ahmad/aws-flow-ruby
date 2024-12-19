@@ -26,6 +26,7 @@ module AWS
         end
       end
 
+      # @api private
       class AsyncScope
         attr_accessor :stackTrace, :root, :failure, :root_context
 
@@ -42,8 +43,10 @@ module AWS
         # @api private
         def cancel(error); @root_error_handler.cancel(error); end
 
+        # @api private
         def initialize(&block)
           @root_context = RootAsyncScope.new
+
           # 1 for the function that skips frames
           # 1 for the create function
           # 1 for the initialize of the backtrace

@@ -66,12 +66,9 @@ module AWS
 
         def consume(symbol)
           @state_history ||= [self.class.get_start_state]
-
           @state_history << @current_state
           @state_history << symbol
-
           transition_tuple = self.class.get_transitions[[@current_state, symbol]]
-
           raise "This is not a legal transition, attempting to consume #{symbol} while at state #{current_state}" unless transition_tuple
           @current_state, func_to_call = transition_tuple
           @state_history << @current_state
